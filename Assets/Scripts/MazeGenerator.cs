@@ -10,9 +10,24 @@ using UnityEngine.AI;
 
 public class MazeGenerator : MonoBehaviour
 {
+    public GameObject UIcontroller;
+
     public GameObject[] tiles;
 
     public GameObject player;
+
+    public List<GameObject> enemyList;
+
+    public GameObject lamp;
+
+    public List<Material> floor;
+
+    public List<Material> wall;
+
+    private int enemyCount = 0;
+
+    // From 0 to 100 the percentage chance of an enemy spawning in a tile
+    public int enemySpawnChance;
 
     const int N = 1;
     const int E = 2;
@@ -27,13 +42,16 @@ public class MazeGenerator : MonoBehaviour
 
     List<List<int>> map = new List<List<int>>();
 
-    
-
-
+    int floorMat = 0;
+    int wallMat = 0;
 
     // Start is called before the first frame update
     void Start()
     {
+        floorMat = UnityEngine.Random.Range(0, floor.Count()-1);
+        wallMat = UnityEngine.Random.Range(0, wall.Count()-1);
+
+
         cell_walls[new Vector2(0, -1)] = N;
         cell_walls[new Vector2(1, 0)] = E;
         cell_walls[new Vector2(0, 1)] = S;
@@ -86,7 +104,7 @@ public class MazeGenerator : MonoBehaviour
 
             if (neighbors.Count > 0)
             {
-                Vector2 next = neighbors[UnityEngine.Random.RandomRange(0, neighbors.Count)];
+                Vector2 next = neighbors[UnityEngine.Random.Range(0, neighbors.Count)];
                 stack.Add(current);
 
                 Vector2 dir = next - current;
@@ -119,6 +137,26 @@ public class MazeGenerator : MonoBehaviour
             {
                 GameObject tile = GameObject.Instantiate(tiles[map[i][j]]);
                 tile.transform.parent = gameObject.transform;
+                tile.transform.GetChild(0).gameObject.GetComponent<MeshRenderer> ().material = floor[floorMat];
+                tile.transform.GetChild(1).GetChild(0).gameObject.GetComponent<MeshRenderer> ().material = wall[wallMat];
+                tile.transform.GetChild(1).GetChild(1).gameObject.GetComponent<MeshRenderer> ().material = wall[wallMat];
+                tile.transform.GetChild(1).GetChild(2).gameObject.GetComponent<MeshRenderer> ().material = wall[wallMat];
+                tile.transform.GetChild(1).GetChild(3).gameObject.GetComponent<MeshRenderer> ().material = wall[wallMat];
+
+                //spawn enemy
+                int enemyType = UnityEngine.Random.Range(0, enemyList.Count);
+                int enemyRoll = UnityEngine.Random.Range(0, 100);
+                Debug.Log("Spawing: " + enemyType);
+                if(enemyRoll <= enemySpawnChance){
+                    enemyCount++;
+                    Debug.Log("Spawned enemy: " + enemyCount);
+                    GameObject enemy = GameObject.Instantiate(enemyList[enemyType]);
+                    enemy.transform.Translate(new Vector3((j+1)*tile_size, 1, i*tile_size));
+                }
+                if(enemyRoll > enemySpawnChance){
+                    GameObject lampDecor = GameObject.Instantiate(lamp);
+                    lampDecor.transform.Translate(new Vector3((j+1)*tile_size, 1, i*tile_size));
+                }
 
                 tile.transform.Translate(new Vector3 (j*tile_size, 0, i * tile_size));
                 tile.name += " " + i.ToString() + ' ' + j.ToString();
@@ -127,6 +165,8 @@ public class MazeGenerator : MonoBehaviour
             }
 
         }
+
+        Variables.Object(UIcontroller).Set("enemyCount", enemyCount);
 
     }
 
