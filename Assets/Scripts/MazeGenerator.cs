@@ -10,6 +10,8 @@ using UnityEngine.AI;
 
 public class MazeGenerator : MonoBehaviour
 {
+    public GameObject heart;
+
     public GameObject UIcontroller;
 
     public GameObject[] tiles;
@@ -154,9 +156,18 @@ public class MazeGenerator : MonoBehaviour
                     enemy.transform.Translate(new Vector3((j+1)*tile_size, 1, i*tile_size));
                 }
                 if(enemyRoll > enemySpawnChance){
-                    GameObject lampDecor = GameObject.Instantiate(lamp);
-                    lampDecor.transform.Translate(new Vector3((j+1)*tile_size, 1, i*tile_size));
+                    int special = UnityEngine.Random.Range(0, 100);
+                    if(special <= 10){
+                        GameObject heartDecor = GameObject.Instantiate(heart);
+                        heartDecor.transform.Translate(new Vector3((j+1)*tile_size, 1, i*tile_size));
+                    }
+                    if(special > 10){
+                        GameObject lampDecor = GameObject.Instantiate(lamp);
+                        lampDecor.transform.Translate(new Vector3((j+1)*tile_size, 1, i*tile_size));
+                    }
                 }
+
+
 
                 tile.transform.Translate(new Vector3 (j*tile_size, 0, i * tile_size));
                 tile.name += " " + i.ToString() + ' ' + j.ToString();
